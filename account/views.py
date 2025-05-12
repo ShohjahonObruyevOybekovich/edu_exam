@@ -1,30 +1,28 @@
-import os
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from decouple import config
 from rest_framework import status
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
-from .models import CustomUser
-from .auth import TelegramAuthenticator, generate_secret_key
-from .utils import get_bot_id_from_token, BotUserJWTAuthentication
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+
+from .auth import TelegramAuthenticator, generate_secret_key
+from .models import CustomUser
+from .utils import get_bot_id_from_token, BotUserJWTAuthentication
 
 
 class JWTtokenGenerator(APIView):
     """
-    Exchange Telegram initData for JWT token.
+    Exchange Telegram initData for JWT token (single bot version).
     """
 
     def post(self, request):
         init_data = request.data.get("init_data")
-        bot = request.data.get("bot", "").strip().upper()
+        if not init_data:
+            raise ValidationError("'init_data' is required.")
 
-        if not init_data or not bot or bot not in ("BOT1", "BOT2"):
-            raise ValidationError("Valid 'init_data' and 'bot' are required.")
-
-        bot_token = os.getenv(f"TOKEN_{bot[-1]}")
+        bot_token = config("BOT_TOKEN")  # ✅ Use one token
         if not bot_token:
-            raise ValidationError("Bot token not configured.")
+            raise ValidationError("BOT_TOKEN is not configured.")
 
         try:
             secret_key = generate_secret_key(bot_token)
@@ -45,10 +43,12 @@ class JWTtokenGenerator(APIView):
 
         access = AccessToken.for_user(user)
         refresh = RefreshToken.for_user(user)
-        access["bot"] = bot
-        refresh["bot"] = bot
 
-        return Response({"access": str(access), "refresh": str(refresh)}, status=200)
+        return Response({
+            "access": str(access),
+            "refresh": str(refresh)
+        }, status=200)
+
 
 
 class JWTtokenRefresh(APIView):

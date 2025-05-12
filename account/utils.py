@@ -15,6 +15,6 @@ class BotUserJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
         try:
             user_id = validated_token["user_id"]
-            return CustomUser.objects.get(id=user_id)
+            return CustomUser.objects.get(chat_id=user_id)
         except (KeyError, CustomUser.DoesNotExist):
             raise AuthenticationFailed("User not found or invalid token")
