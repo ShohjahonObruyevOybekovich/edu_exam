@@ -6,6 +6,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, Retrieve
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from account.models import CustomUser
+from bot.tasks import bot
 from exam.models import Level, Question, Answer
 from exam.serializers import LevelSerializer, QuestionSerializer, AnswerSerializer, UserAnswerSerializer
 
@@ -101,12 +103,22 @@ class QuestionsCheck(APIView):
 
         ball = round((correct / total) * 100) if total > 0 else 0
 
+        user = CustomUser.objects.filter(role="Admin").all()
+        text = """
+        "correct": correct,
+        "incorrect": incorrect,
+        "total": total,
+        "ball": f"{ball}/100"
+        """
+        bot.send_message(chat_id=user.chat_id,text=text)
+
         return Response({
             "correct": correct,
             "incorrect": incorrect,
             "total": total,
             "ball": f"{ball}/100"
         })
+
 
 
 class AnswerListCreate(ListCreateAPIView):

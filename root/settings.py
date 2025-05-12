@@ -29,7 +29,16 @@ DEBUG = config("DEBUG", default=True, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,[::1]").split(",")
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://exam.eduzoneuz.uz",
 
+]
 # Application definition
 
 INSTALLED_APPS = [
