@@ -12,27 +12,31 @@ class LevelSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "time",
-            'question',
+            "question",
             "created_at",
             "updated_at"
         ]
-    def get_question(self, obj):
-        return Question.objects.filter(level=obj).all()
 
+    def get_question(self, obj):
+        questions = Question.objects.filter(level=obj)
+        return QuestionSerializer(questions, many=True).data
 
 
 class QuestionSerializer(serializers.ModelSerializer):
     answer = serializers.SerializerMethodField()
+
     class Meta:
         model = Question
         fields = [
             "id",
             "name",
-            'answer',
+            "answer",
             "level",
         ]
+
     def get_answer(self, obj):
-        return Answer.objects.filter(question=obj).all()
+        answers = Answer.objects.filter(question=obj)
+        return AnswerSerializer(answers, many=True).data
 
 
 class AnswerSerializer(serializers.ModelSerializer):
