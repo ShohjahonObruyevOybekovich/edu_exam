@@ -14,6 +14,6 @@ def start_btn():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text="🚀 Imtihonni boshlash",
-            web_app=WebAppInfo(url="https://your-mini-app-url.com")  # ← replace with your real Mini App URL
+            web_app=WebAppInfo(url=MINI_APP_URL)  # ← replace with your real Mini App URL
         )]
     ])
