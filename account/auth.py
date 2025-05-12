@@ -12,18 +12,16 @@ class TelegramAuthenticator:
         parsed = OrderedDict(parse_qsl(init_data, keep_blank_values=True))
         hash_received = parsed.pop("hash", None)
 
-        # Fix: decode JSON-encoded user
-        if "user" in parsed:
-            try:
-                parsed["user"] = json.loads(parsed["user"])
-            except json.JSONDecodeError:
-                raise ValueError("Invalid user JSON")
-
+        # ⚠️ At this point, 'user' is still a string — DO NOT decode yet
         data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
         calculated_hash = HMAC(self.secret, data_check_string.encode(), hashlib.sha256).hexdigest()
 
         if hash_received != calculated_hash:
             raise ValueError("Hash verification failed.")
+
+        # ✅ Now safely decode JSON fields
+        if "user" in parsed:
+            parsed["user"] = json.loads(parsed["user"])
 
         from .web_app.data import WebAppInitData
         return WebAppInitData(**parsed)
