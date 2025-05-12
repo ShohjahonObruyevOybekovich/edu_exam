@@ -38,6 +38,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "https://exam.eduzoneuz.uz"
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://exam.eduzoneuz.uz"
+]
 # Application definition
 
 INSTALLED_APPS = [
