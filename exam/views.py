@@ -3,13 +3,16 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from account.models import CustomUser
+from account.utils import BotUserJWTAuthentication
 from bot.tasks import bot
 from exam.models import Level, Question, Answer
 from exam.serializers import LevelSerializer, QuestionSerializer, AnswerSerializer, UserAnswerSerializer
+from result.models import Result
 
 
 # Create your views here.
@@ -57,6 +60,8 @@ class QuestionDetail(RetrieveUpdateAPIView):
 
 
 class QuestionsCheck(APIView):
+    authentication_classes = [BotUserJWTAuthentication]
+
     @swagger_auto_schema(
         request_body=UserAnswerSerializer(many=True),
         operation_description="Check answers and calculate score.",
@@ -77,12 +82,11 @@ class QuestionsCheck(APIView):
     def post(self, request, *args, **kwargs):
         answers = request.data
 
-        if not isinstance(answers, list):
-            return Response({"error": "Expected a list of answers"}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(answers, list) or not answers:
+            return Response({"error": "Expected a non-empty list of answers"}, status=400)
 
+        correct = incorrect = 0
         total = len(answers)
-        correct = 0
-        incorrect = 0
 
         for item in answers:
             question_id = item.get("question_id")
@@ -103,21 +107,39 @@ class QuestionsCheck(APIView):
 
         ball = round((correct / total) * 100) if total > 0 else 0
 
-        user = CustomUser.objects.filter(role="Admin").all()
-        text = """
-        "correct": correct,
-        "incorrect": incorrect,
-        "total": total,
-        "ball": f"{ball}/100"
-        """
-        bot.send_message(chat_id=user.chat_id,text=text)
+        # Notify admins
+        for admin in CustomUser.objects.filter(role="Admin", chat_id__isnull=False):
+            try:
+                text = (
+                    f"✅ Correct: {correct}\n"
+                    f"❌ Incorrect: {incorrect}\n"
+                    f"🧮 Total: {total}\n"
+                    f"📊 Ball: {ball}/100"
+                )
+                bot.send_message(chat_id=admin.chat_id, text=text)
+            except Exception:
+                continue
+
+        # Save result
+        first_question_id = answers[0].get("question_id")
+        try:
+            question = Question.objects.get(id=first_question_id)
+        except Question.DoesNotExist:
+            return Response({"error": "Invalid question_id"}, status=404)
+
+        Result.objects.create(
+            user=request.user,
+            level=question.level,
+            correct_answer=correct,
+            ball=ball
+        )
 
         return Response({
             "correct": correct,
             "incorrect": incorrect,
             "total": total,
             "ball": f"{ball}/100"
-        })
+        }, status=200)
 
 
 

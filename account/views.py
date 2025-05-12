@@ -1,101 +1,86 @@
+import os
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from .models import CustomUser
 from .auth import TelegramAuthenticator, generate_secret_key
-from .utils import get_bot_id_from_token
+from .utils import get_bot_id_from_token, BotUserJWTAuthentication
 from rest_framework.exceptions import ValidationError
-import os
-from .utils import BotUserJWTAuthentication
 
 
 class JWTtokenGenerator(APIView):
     """
-    Generate JWT token using telegram mini app credentials.
+    Exchange Telegram initData for JWT token.
     """
 
     def post(self, request):
         init_data = request.data.get("init_data")
-        bot = request.data.get("bot").strip().upper() if request.data.get("bot") else None
+        bot = request.data.get("bot", "").strip().upper()
 
-        if not init_data or not bot:
-            raise ValidationError("init_data and bot are required")
+        if not init_data or not bot or bot not in ("BOT1", "BOT2"):
+            raise ValidationError("Valid 'init_data' and 'bot' are required.")
 
-        if bot not in ("BOT1", "BOT2"):
-            raise ValidationError("Invalid bot")
-
-        bot_key = f"TOKEN_{bot[-1]}"
-        bot_token = os.getenv(bot_key)
+        bot_token = os.getenv(f"TOKEN_{bot[-1]}")
         if not bot_token:
-            raise ValidationError("Bot token not found")
+            raise ValidationError("Bot token not configured.")
 
         try:
             secret_key = generate_secret_key(bot_token)
             authenticator = TelegramAuthenticator(secret=secret_key)
             bot_id = get_bot_id_from_token(bot_token)
-            if not bot_id:
-                raise ValidationError("Invalid bot token")
-            init_data = authenticator.validate_third_party(init_data=init_data, bot_id=bot_id)
+            validated_data = authenticator.validate_third_party(init_data, bot_id)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_data = init_data.user
-        if not user_data:
-            return Response({"error": "User data is required"}, status=status.HTTP_400_BAD_REQUEST)
+        tg_user = validated_data.user
+        if not tg_user:
+            return Response({"error": "User data missing."}, status=400)
 
-        user = CustomUser.objects.filter(chat_id=user_data.id).first()
-        if not user:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        user, _ = CustomUser.objects.get_or_create(
+            chat_id=tg_user.id,
+            defaults={"full_name": f"{tg_user.first_name} {tg_user.last_name or ''}".strip()}
+        )
 
         access = AccessToken.for_user(user)
         refresh = RefreshToken.for_user(user)
-
         access["bot"] = bot
         refresh["bot"] = bot
 
-        return Response({
-            "access": str(access),
-            "refresh": str(refresh)
-        }, status=status.HTTP_200_OK)
+        return Response({"access": str(access), "refresh": str(refresh)}, status=200)
 
 
 class JWTtokenRefresh(APIView):
     """
-    Refresh JWT token using refresh token.
+    Refresh JWT token.
     """
-
     def post(self, request):
-        refresh_token = request.data.get("refresh")
-        if not refresh_token:
-            return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+        token = request.data.get("refresh")
+        if not token:
+            return Response({"error": "Refresh token is required"}, status=400)
 
         try:
-            refresh = RefreshToken(refresh_token)
-            access = refresh.access_token
+            refresh = RefreshToken(token)
             return Response({
-                "access": str(access),
-                "refresh": str(refresh)
-            }, status=status.HTTP_200_OK)
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+            })
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e)}, status=400)
 
 
 class Me(APIView):
+    """
+    Returns authenticated user info.
+    """
     authentication_classes = [BotUserJWTAuthentication]
-    """
-    Get user information.
-    """
 
     def get(self, request):
         user = request.user
-        if not user:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        user_data = {
+        return Response({
             "id": user.id,
-            "name": user.name,
-            "number": user.number,
+            "name": user.full_name,
             "chat_id": user.chat_id,
-        }
-        return Response(user_data, status=status.HTTP_200_OK)
+            "phone": user.phone,
+        })
