@@ -47,7 +47,7 @@ async def user_lang_handler(message: Message, state: FSMContext):
     await state.set_data(data)
     await state.set_state(User.phone)
     await message.answer(
-        "Telefon raqamingizni Raqamni yuborish 📞 tugmasi orqali yuboring ! \n",
+        "Telefon raqamingizni Raqamni yuborish \n📞 tugmasi orqali yuboring ! \n",
         reply_markup=phone_number_btn()
     )
 
