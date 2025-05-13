@@ -1,4 +1,5 @@
 import requests
+from icecream import ic
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from account.models import CustomUser
@@ -6,7 +7,9 @@ from account.models import CustomUser
 
 def get_bot_id_from_token(token: str) -> int:
     response = requests.get(f"https://api.telegram.org/bot{token}/getMe")
+    ic(response.content)
     if response.ok:
+        ic(response.ok)
         return response.json()["result"]["id"]
     raise ValueError("Invalid bot token")
 

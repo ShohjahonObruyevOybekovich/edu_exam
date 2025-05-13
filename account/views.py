@@ -28,7 +28,7 @@ class JWTtokenGenerator(APIView):
             secret_key = generate_secret_key(bot_token)
             authenticator = TelegramAuthenticator(secret=secret_key)
             bot_id = get_bot_id_from_token(bot_token)
-            validated_data = authenticator.validate_third_party(init_data, bot_id)
+            validated_data = authenticator.validate_third_party(init_data,bot_id)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
