@@ -111,9 +111,10 @@ class QuestionsCheck(APIView):
         for admin in CustomUser.objects.filter(role="Admin", chat_id__isnull=False):
             try:
                 text = (
-                    f"✅ Correct: {correct}\n"
-                    f"❌ Incorrect: {incorrect}\n"
-                    f"🧮 Total: {total}\n"
+                    f"🧑‍🎓 Talaba: <b>{request.user.full_name}<b/>"
+                    f"✅ To'g'ri javoblar: {correct}\n"
+                    f"❌ Noto'g'ri javoblar: {incorrect}\n"
+                    f"🧮 Jami: {total}\n"
                     f"📊 Ball: {ball}/100"
                 )
                 bot.send_message(chat_id=admin.chat_id, text=text)
