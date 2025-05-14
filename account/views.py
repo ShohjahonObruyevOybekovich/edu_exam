@@ -1,4 +1,7 @@
+import traceback
+
 from decouple import config
+from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -8,7 +11,6 @@ from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from .auth import TelegramAuthenticator, generate_secret_key
 from .models import CustomUser
 from .utils import get_bot_id_from_token, BotUserJWTAuthentication
-
 
 class JWTtokenGenerator(APIView):
     """
@@ -20,7 +22,7 @@ class JWTtokenGenerator(APIView):
         if not init_data:
             raise ValidationError("'init_data' is required.")
 
-        bot_token = config("BOT_TOKEN")  # ✅ Use one token
+        bot_token = config("BOT_TOKEN")
         if not bot_token:
             raise ValidationError("BOT_TOKEN is not configured.")
 
@@ -28,11 +30,15 @@ class JWTtokenGenerator(APIView):
             secret_key = generate_secret_key(bot_token)
             authenticator = TelegramAuthenticator(secret=secret_key)
             bot_id = get_bot_id_from_token(bot_token)
-            validated_data = authenticator.validate_third_party(init_data,bot_id)
+            validated_data = authenticator.validate_third_party(init_data, bot_id)
+            ic("Validated Data:", validated_data)
         except Exception as e:
+            traceback.print_exc()
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         tg_user = validated_data.user
+        ic("Parsed User:", tg_user)
+
         if not tg_user:
             return Response({"error": "User data missing."}, status=400)
 
@@ -48,8 +54,6 @@ class JWTtokenGenerator(APIView):
             "access": str(access),
             "refresh": str(refresh)
         }, status=200)
-
-
 
 class JWTtokenRefresh(APIView):
     """

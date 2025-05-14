@@ -1,6 +1,6 @@
 import json
-from hmac import HMAC
 import hashlib
+from hmac import HMAC
 from urllib.parse import parse_qsl
 from collections import OrderedDict
 
@@ -24,7 +24,6 @@ class TelegramAuthenticator:
         if not hash_received or not signature:
             raise ValueError("Missing 'hash' or 'signature' in init_data")
 
-        # Build data check string excluding `hash` and `signature`
         data_check_string = "\n".join(
             f"{k}={v}" for k, v in sorted(parsed.items()) if k not in ["hash", "signature"]
         )
@@ -33,25 +32,30 @@ class TelegramAuthenticator:
         ic(hash_received)
         ic(calculated_hash)
 
+        # Uncomment this in production
         # if hash_received != calculated_hash:
         #     raise ValueError("Hash verification failed.")
 
-        # Optional bot ID check
         if bot_id is not None:
-            bot_token = config("BOT_TOKEN")  # safely load real token
+            bot_token = config("BOT_TOKEN")
             actual_bot_id = get_bot_id_from_token(bot_token)
             if str(bot_id) != str(actual_bot_id):
-                raise ValueError("Bot ID mismatch.")
+                raise ValueError("Bot ID mismatch")
 
-        # Deserialize JSON fields properly
-        if "user" in parsed and isinstance(parsed["user"], str):
-            parsed["user"] = WebAppUser(**json.loads(parsed["user"]))
+        # Try parsing user/chat/receiver
+        try:
+            if "user" in parsed and isinstance(parsed["user"], str):
+                ic("Raw user:", parsed["user"])
+                parsed["user"] = WebAppUser(**json.loads(parsed["user"]))
 
-        if "chat" in parsed and isinstance(parsed["chat"], str):
-            parsed["chat"] = WebAppChat(**json.loads(parsed["chat"]))
+            if "chat" in parsed and isinstance(parsed["chat"], str):
+                parsed["chat"] = WebAppChat(**json.loads(parsed["chat"]))
 
-        if "receiver" in parsed and isinstance(parsed["receiver"], str):
-            parsed["receiver"] = WebAppUser(**json.loads(parsed["receiver"]))
+            if "receiver" in parsed and isinstance(parsed["receiver"], str):
+                parsed["receiver"] = WebAppUser(**json.loads(parsed["receiver"]))
+        except Exception as e:
+            ic("❌ Failed to parse WebAppUser/Chat:", e)
+            raise
 
         return WebAppInitData(**parsed)
 
