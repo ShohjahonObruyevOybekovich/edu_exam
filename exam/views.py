@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import render
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -81,6 +82,12 @@ class QuestionsCheck(APIView):
         }
     )
     def post(self, request, *args, **kwargs):
+        ic("🔍 request.user:", request.user)
+        ic("🔍 request.user type:", type(request.user))
+        ic("Request data:", request.data)
+
+        if isinstance(request.user, AnonymousUser):
+            return Response({"error": "Authentication failed"}, status=401)
         answers = request.data
 
         if not isinstance(answers, list) or not answers:
@@ -128,8 +135,8 @@ class QuestionsCheck(APIView):
             question = Question.objects.get(id=first_question_id)
         except Question.DoesNotExist:
             return Response({"error": "Invalid question_id"}, status=404)
-        ic(request.user)
-        user = CustomUser.objects.get(id=request.user.id)
+        ic("chat_id === ",request.user)
+        user = CustomUser.objects.get(chat_id=request.user.id)
         ic(user)
         Result.objects.create(
             user=request.user,
