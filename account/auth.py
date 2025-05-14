@@ -46,7 +46,9 @@ class TelegramAuthenticator:
         try:
             if "user" in parsed and isinstance(parsed["user"], str):
                 ic("Raw user:", parsed["user"])
+
                 parsed["user"] = WebAppUser(**json.loads(parsed["user"]))
+
 
             if "chat" in parsed and isinstance(parsed["chat"], str):
                 parsed["chat"] = WebAppChat(**json.loads(parsed["chat"]))

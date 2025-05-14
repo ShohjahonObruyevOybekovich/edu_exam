@@ -4,10 +4,13 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
 from rest_framework import status
+from rest_framework.authentication import get_authorization_header
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.tokens import UntypedToken
 
 from account.models import CustomUser
 from account.utils import BotUserJWTAuthentication
@@ -60,7 +63,16 @@ class QuestionDetail(RetrieveUpdateAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
-
+def extract_token_data(request):
+    auth_header = get_authorization_header(request).decode("utf-8")
+    if auth_header.startswith("Bearer "):
+        token_str = auth_header.split(" ")[1]
+        try:
+            token = UntypedToken(token_str)
+            return token.payload  # dict with all fields
+        except InvalidToken as e:
+            print("❌ Invalid token:", e)
+    return None
 class QuestionsCheck(APIView):
     authentication_classes = [BotUserJWTAuthentication]
 
@@ -85,6 +97,11 @@ class QuestionsCheck(APIView):
         ic("🔍 request.user:", request.user)
         ic("🔍 request.user type:", type(request.user))
         ic("Request data:", request.data)
+        if request.user.is_anonymous:
+            payload = extract_token_data(request)
+            print("⚠️ Anonymous user, but raw token payload:")
+            print(payload)
+            return Response({"error": "Unauthorized"}, status=401)
 
         if isinstance(request.user, AnonymousUser):
             return Response({"error": "Authentication failed"}, status=401)
@@ -135,7 +152,7 @@ class QuestionsCheck(APIView):
             question = Question.objects.get(id=first_question_id)
         except Question.DoesNotExist:
             return Response({"error": "Invalid question_id"}, status=404)
-        ic("chat_id === ",request.user)
+
         user = CustomUser.objects.get(chat_id=request.user.id)
         ic(user)
         Result.objects.create(
