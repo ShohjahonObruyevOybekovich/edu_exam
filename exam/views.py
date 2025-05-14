@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -127,7 +128,9 @@ class QuestionsCheck(APIView):
             question = Question.objects.get(id=first_question_id)
         except Question.DoesNotExist:
             return Response({"error": "Invalid question_id"}, status=404)
-
+        ic(request.user)
+        user = CustomUser.objects.get(id=request.user.id)
+        ic(user)
         Result.objects.create(
             user=request.user,
             level=question.level,
