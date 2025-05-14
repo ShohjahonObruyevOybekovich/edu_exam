@@ -1,22 +1,19 @@
-import traceback
-
-from decouple import config
-from icecream import ic
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from decouple import config
+from icecream import ic
 
-from .auth import TelegramAuthenticator, generate_secret_key
-from .models import CustomUser
-from .utils import get_bot_id_from_token, BotUserJWTAuthentication
+from account.auth import TelegramAuthenticator, generate_secret_key
+from account.utils import get_bot_id_from_token, BotUserJWTAuthentication
+from account.models import CustomUser
 
 class JWTtokenGenerator(APIView):
     """
     Exchange Telegram initData for JWT token (single bot version).
     """
-
     def post(self, request):
         init_data = request.data.get("init_data")
         if not init_data:
@@ -31,13 +28,10 @@ class JWTtokenGenerator(APIView):
             authenticator = TelegramAuthenticator(secret=secret_key)
             bot_id = get_bot_id_from_token(bot_token)
             validated_data = authenticator.validate_third_party(init_data, bot_id)
-            ic("Validated Data:", validated_data)
+            tg_user = validated_data.user
+            ic("Parsed User:", tg_user)
         except Exception as e:
-            traceback.print_exc()
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        tg_user = validated_data.user
-        ic("Parsed User:", tg_user)
 
         if not tg_user:
             return Response({"error": "User data missing."}, status=400)
@@ -54,6 +48,7 @@ class JWTtokenGenerator(APIView):
             "access": str(access),
             "refresh": str(refresh)
         }, status=200)
+
 
 class JWTtokenRefresh(APIView):
     """
@@ -82,6 +77,9 @@ class Me(APIView):
 
     def get(self, request):
         user = request.user
+        if not isinstance(user, CustomUser):
+            return Response({"error": "Authentication failed."}, status=401)
+
         return Response({
             "id": user.id,
             "name": user.full_name,
