@@ -143,16 +143,8 @@ class QuestionsCheck(APIView):
                     f"📊 Ball: {ball}/100"
                 )
                 bot.send_message(chat_id=admin.chat_id, text=text)
-            except Exception:
-                continue
-
-        # Save result
-        first_question_id = answers[0].get("question_id")
-        try:
-            question = Question.objects.get(id=first_question_id)
-        except Question.DoesNotExist:
-            return Response({"error": "Invalid question_id"}, status=404)
-
+            except Exception as e:
+                return bot.send_message(chat_id=admin.chat_id,text=e)
         return Response({
             "correct": correct,
             "incorrect": incorrect,
