@@ -15,12 +15,12 @@ from rest_framework_simplejwt.tokens import UntypedToken
 
 from account.models import CustomUser
 from account.utils import BotUserJWTAuthentication
-from bot.tasks import bot
+from bot.tasks import TelegramBot
 from exam.models import Level, Question, Answer
 from exam.serializers import LevelSerializer, QuestionSerializer, AnswerSerializer, UserAnswerSerializer
 from result.models import Result
 
-
+bot = TelegramBot()
 # Create your views here.
 
 class LevelListCreate(ListCreateAPIView):
