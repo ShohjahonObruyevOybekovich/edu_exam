@@ -137,7 +137,7 @@ class QuestionsCheck(APIView):
             try:
                 ic(admin.chat_id)
                 text = (
-                    f"🧑‍🎓 Talaba: <b>{request.user.full_name}<b/>"
+                    f"🧑‍🎓 Talaba: <b>{admin.full_name}</b>\n"
                     f"✅ To'g'ri javoblar: {correct}\n"
                     f"❌ Noto'g'ri javoblar: {incorrect}\n"
                     f"🧮 Jami: {total}\n"
