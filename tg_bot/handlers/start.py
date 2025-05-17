@@ -84,9 +84,10 @@ async def handle_phone_number(message: Message, state: FSMContext) -> None:
         reply_markup=start_btn()
     )
     await message.reply(
-        text="🏆 Imtihonni boshlashingiz mumkin!",
+        text="",
         reply_markup=results()
     )
+    await state.clear()
 @dp.message(lambda message: message.text == "📊 Natija")
 async def handle_natija_handler(message: Message, state: FSMContext) -> None:
     result = Result.objects.filter(
