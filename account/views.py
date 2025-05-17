@@ -35,10 +35,13 @@ class JWTtokenGenerator(APIView):
         authenticator = TelegramAuthenticator(secret_key)
 
         auth_data = authenticator.validate(init_data)
-
+        user_id = auth_data.user.id
         print(auth_data)
 
-        return Response({"data": str(auth_data)})
+        return Response({
+            "user_id": user_id,
+            "data": str(auth_data)
+        })
 
         # try:
         #     secret_key = generate_secret_key(bot_token)
