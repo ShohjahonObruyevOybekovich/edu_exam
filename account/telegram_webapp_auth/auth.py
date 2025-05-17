@@ -12,13 +12,13 @@ from urllib.parse import unquote
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
-from utils.telegram_webapp_auth.data import PROD_PUBLIC_KEY
-from utils.telegram_webapp_auth.data import TEST_PUBLIC_KEY
-from utils.telegram_webapp_auth.data import WebAppChat
-from utils.telegram_webapp_auth.data import WebAppInitData
-from utils.telegram_webapp_auth.data import WebAppUser
-from utils.telegram_webapp_auth.errors import ExpiredInitDataError
-from utils.telegram_webapp_auth.errors import InvalidInitDataError
+from .data import PROD_PUBLIC_KEY
+from .data import TEST_PUBLIC_KEY
+from .data import WebAppChat
+from .data import WebAppInitData
+from .data import WebAppUser
+from .errors import ExpiredInitDataError
+from .errors import InvalidInitDataError
 
 
 def generate_secret_key(token: str) -> bytes:

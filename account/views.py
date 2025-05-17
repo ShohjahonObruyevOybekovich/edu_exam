@@ -6,9 +6,10 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError
 import os
+
 from .utils import BotUserJWTAuthentication
 
-from telegram_webapp_auth.auth import TelegramAuthenticator, generate_secret_key
+from .telegram_webapp_auth.auth import TelegramAuthenticator, generate_secret_key
 
 
 BOT_TOKEN = config("BOT_TOKEN")
