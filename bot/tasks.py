@@ -1,5 +1,7 @@
 import os
 import logging
+
+from decouple import config
 from requests import post
 
 
@@ -8,7 +10,7 @@ from icecream import ic
 # load_dotenv()
 # Celery setup
 # app = Celery('tasks', broker='redis://localhost:6378/0')
-
+token = config("BOT_TOKEN")
 # Logger setup
 logging.basicConfig(level=logging.INFO)
 
@@ -20,7 +22,7 @@ class TelegramBot:
         # Get token from environment variables
 
 
-        token = os.getenv("BOT_TOKEN")
+
         if not token:
             raise ValueError("Telegram bot TOKEN is missing! Set the TOKEN environment variable.")
         self.base_url = self.HOST + token
