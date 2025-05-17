@@ -96,6 +96,7 @@ class QuestionsCheck(APIView):
     def post(self, request, *args, **kwargs):
 
         answers = request.data
+        ic(request.data)
         ic(request.user)
 
         print("✅ Authenticated as:", request.user.full_name)
@@ -122,8 +123,14 @@ class QuestionsCheck(APIView):
                     incorrect += 1
             except Answer.DoesNotExist:
                 incorrect += 1
-
+        question_id = answers[0].get("question_id")
         ball = round((correct / total) * 100) if total > 0 else 0
+        result = Result.objects.create(
+            level=Question.objects.get(id=question_id).level,
+            user=request.user,
+            correct_answer=correct,
+            ball=ball,
+        )
 
         # Notify admins
         for admin in CustomUser.objects.filter(role="Admin", chat_id__isnull=False):
