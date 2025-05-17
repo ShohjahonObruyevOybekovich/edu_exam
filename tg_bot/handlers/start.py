@@ -10,7 +10,7 @@ from account.models import CustomUser
 from dispatcher import dp, TOKEN
 from result.models import Result
 from tg_bot.buttons.inline import degree, start_btn
-from tg_bot.buttons.reply import phone_number_btn
+from tg_bot.buttons.reply import phone_number_btn, results
 from tg_bot.buttons.text import start_txt, natija_txt
 from tg_bot.state.main import User
 from tg_bot.utils import format_phone_number
@@ -82,6 +82,10 @@ async def handle_phone_number(message: Message, state: FSMContext) -> None:
         ),
         parse_mode="HTML",
         reply_markup=start_btn()
+    )
+    await message.reply(
+        text="🏆 Imtihonni boshlashingiz mumkin!",
+        reply_markup=results()
     )
 @dp.message(lambda message: message.text == "📊 Natija")
 async def handle_natija_handler(message: Message, state: FSMContext) -> None:

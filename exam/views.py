@@ -144,7 +144,7 @@ class QuestionsCheck(APIView):
                     f"🧮 Jami: {total}\n"
                     f"📊 Ball: {ball}/100"
                 )
-                bot.send_message(chat_id=admin.chat_id, text=text,reply_markup=results())
+                bot.send_message(chat_id=admin.chat_id, text=text)
             except Exception as e:
                 return bot.send_message(chat_id=admin.chat_id,text=e)
         return Response({
