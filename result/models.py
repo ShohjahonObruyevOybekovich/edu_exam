@@ -15,7 +15,7 @@ class Result(BaseModel):
     ball = models.CharField("Ball",max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return self.user.username
+        return self.user.full_name
 
 
 

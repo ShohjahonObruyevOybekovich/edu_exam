@@ -131,7 +131,6 @@ class QuestionsCheck(APIView):
             correct_answer=correct,
             ball=ball,
         )
-        ic("result:", result)
 
         # Notify admins
         for admin in CustomUser.objects.filter(role="Admin", chat_id__isnull=False):
