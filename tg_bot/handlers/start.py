@@ -54,31 +54,31 @@ async def user_lang_handler(message: Message, state: FSMContext):
 
 @dp.message(User.phone)
 async def handle_phone_number(message: Message, state: FSMContext) -> None:
-    # Check for wrong input
-    if message.text and message.text.isalpha():
+    if not message.contact:
+        # Faqat contact yuborilmagan holatda ogohlantirish
         await state.set_state(User.phone)
         await message.answer(
-            "Telefon raqamingizni Raqamni yuborish 📞 tugmasi orqali yuboring ! \n",
-            reply_markup=phone_number_btn()
+            "❗️Telefon raqamingizni *Raqamni yuborish 📞* tugmasi orqali yuboring!",
+            reply_markup=phone_number_btn(),
+            parse_mode="Markdown"
         )
         return
 
+    # Agar contact yuborilgan bo‘lsa, raqamni saqlash
+    phone_number = format_phone_number(message.contact.phone_number)
 
-    if message.contact:
-        phone_number = message.contact.phone_number
-        phone_number = format_phone_number(phone_number)
-
-        user = CustomUser.objects.filter(chat_id=message.from_user.id).first()
+    user = CustomUser.objects.filter(chat_id=message.from_user.id).first()
+    if user:
         user.phone = phone_number
         user.save()
 
-        await message.answer(
-            text=(
-                f"✅ <b>Telefon raqamingiz muvaffaqiyatli saqlandi!</b>\n"
-                f"📞 <b>{phone_number}</b>\n\n"
-                f"🚀 <b>Endi imtihonni boshlashga tayyormisiz?</b>\n"
-                f"Quyidagi tugmani bosing va darajangizni aniqlang! 👇🏿"
-            ),
-            parse_mode="HTML",
-            reply_markup=start_btn()
-        )
+    await message.answer(
+        text=(
+            f"✅ <b>Telefon raqamingiz muvaffaqiyatli saqlandi!</b>\n"
+            f"📞 <b>{phone_number}</b>\n\n"
+            f"🚀 <b>Endi imtihonni boshlashga tayyormisiz?</b>\n"
+            f"Quyidagi tugmani bosing va darajangizni aniqlang! 👇🏿"
+        ),
+        parse_mode="HTML",
+        reply_markup=start_btn()
+    )
