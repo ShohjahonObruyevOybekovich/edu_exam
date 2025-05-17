@@ -135,6 +135,7 @@ class QuestionsCheck(APIView):
         # Notify admins
         for admin in CustomUser.objects.filter(role="Admin", chat_id__isnull=False):
             try:
+                ic(admin.chat_id)
                 text = (
                     f"🧑‍🎓 Talaba: <b>{request.user.full_name}<b/>"
                     f"✅ To'g'ri javoblar: {correct}\n"
