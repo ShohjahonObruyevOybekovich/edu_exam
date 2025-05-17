@@ -75,8 +75,7 @@ def extract_token_data(request):
             print("❌ Invalid token:", e)
     return None
 class QuestionsCheck(APIView):
-    authentication_classes = [BotUserJWTAuthentication]
-
+    permission_classes = [IsAuthenticated]
     @swagger_auto_schema(
         request_body=UserAnswerSerializer(many=True),
         operation_description="Check answers and calculate score.",
