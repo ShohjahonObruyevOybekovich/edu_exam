@@ -97,6 +97,7 @@ class QuestionsCheck(APIView):
     def post(self, request, *args, **kwargs):
 
         answers = request.data
+        ic(request.user)
 
         print("✅ Authenticated as:", request.user.full_name)
 

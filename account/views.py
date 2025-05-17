@@ -3,10 +3,11 @@ from icecream import ic
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework.exceptions import ValidationError
 import os
 
+from .models import CustomUser
 from .utils import BotUserJWTAuthentication
 
 from .telegram_webapp_auth.auth import TelegramAuthenticator, generate_secret_key
@@ -36,12 +37,18 @@ class JWTtokenGenerator(APIView):
 
         auth_data = authenticator.validate(init_data)
         user_id = auth_data.user.id
-        print(auth_data)
+        user = CustomUser.objects.filter(chat_id=user_id).first()
+        if not user:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        access = AccessToken.for_user(user)
+        refresh = RefreshToken.for_user(user)
 
         return Response({
-            "user_id": user_id,
-            "data": str(auth_data)
-        })
+            "access": str(access),
+            "refresh": str(refresh)
+        }, status=status.HTTP_200_OK)
+
 
         # try:
         #     secret_key = generate_secret_key(bot_token)
