@@ -8,6 +8,7 @@ from icecream import ic
 
 from account.models import CustomUser
 from dispatcher import dp, TOKEN
+from result.models import Result
 from tg_bot.buttons.inline import degree, start_btn
 from tg_bot.buttons.reply import phone_number_btn
 from tg_bot.buttons.text import start_txt, natija_txt
@@ -82,3 +83,31 @@ async def handle_phone_number(message: Message, state: FSMContext) -> None:
         parse_mode="HTML",
         reply_markup=start_btn()
     )
+@dp.message(lambda message: message.text == "📊 Natija")
+async def handle_natija_handler(message: Message, state: FSMContext) -> None:
+    result = Result.objects.filter(
+        user__chat_id=message.from_user.id,
+    ).first()
+
+    if result:
+        await message.answer(
+            text=(
+                f"📊 <b>Natijangiz tayyor!</b>\n\n"
+                f"🧑‍🎓 <b>Talaba:</b> <i>{result.user.full_name}</i>\n"
+                f"🏆 <b> Imtihon darajasi:</b> <i>{result.level.name}</i>\n"
+                f"✅ <b>To'g'ri javoblar:</b> <code>{result.correct_answer}</code>\n"
+                f"📈 <b>Natija ball:</b> <code>{result.ball}</code> / 100\n\n"
+                f"🥳 <b>Ajoyib!</b> Biz bilan ekanligingizdan xursandmiz!"
+            ),
+            parse_mode="HTML",
+        )
+    else:
+        await message.answer(
+            text=(
+                "😕 Sizda hali natija mavjud emas.\n\n"
+                "📌 Avval imtihonni bajarib, keyin natijangizni ko‘rishingiz mumkin.\n"
+                "🚀 Imtihonni boshlash uchun tugmani bosing 👇"
+            ),
+            reply_markup=start_btn()
+        )
+

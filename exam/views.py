@@ -19,6 +19,7 @@ from bot.tasks import TelegramBot
 from exam.models import Level, Question, Answer
 from exam.serializers import LevelSerializer, QuestionSerializer, AnswerSerializer, UserAnswerSerializer
 from result.models import Result
+from tg_bot.buttons.reply import results
 
 bot = TelegramBot()
 # Create your views here.
@@ -143,7 +144,7 @@ class QuestionsCheck(APIView):
                     f"🧮 Jami: {total}\n"
                     f"📊 Ball: {ball}/100"
                 )
-                bot.send_message(chat_id=admin.chat_id, text=text)
+                bot.send_message(chat_id=admin.chat_id, text=text,reply_markup=results())
             except Exception as e:
                 return bot.send_message(chat_id=admin.chat_id,text=e)
         return Response({
