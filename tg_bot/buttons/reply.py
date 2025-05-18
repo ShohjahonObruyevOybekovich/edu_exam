@@ -10,3 +10,13 @@ def results():
     return ReplyKeyboardMarkup(keyboard=[[
         KeyboardButton(text="📊 Natija")
     ]],resize_keyboard=True)
+
+
+def admin():
+    k1 = KeyboardButton(text="👥 Foydalanuvchilar ro‘yxati")
+    k2 = KeyboardButton(text="📊 Hisobotlar")
+
+    return ReplyKeyboardMarkup(
+        keyboard=[[k1], [k2]],
+        resize_keyboard=True
+    )
