@@ -129,5 +129,6 @@ class Me(APIView):
             "name": user.name,
             "number": user.number,
             "chat_id": user.chat_id,
+            "has_passed": user.has_passed,
         }
         return Response(user_data, status=status.HTTP_200_OK)
