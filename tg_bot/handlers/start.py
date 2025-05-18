@@ -37,8 +37,11 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
         return
 
     if user.role == "ADMIN":
-        # Optional: send admin-specific buttons or info
-        pass
+        await message.answer(
+            text="🔐 *Admin bo‘limiga hush kelibsiz!* 👋\nSizda to‘liq boshqaruv huquqlari mavjud.",
+            reply_markup=admin(),
+            parse_mode="Markdown"
+        )
     if user:
         await message.answer(natija_txt,reply_markup=results())
 
