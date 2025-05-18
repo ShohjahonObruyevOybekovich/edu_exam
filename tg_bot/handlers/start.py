@@ -190,13 +190,13 @@ async def handle_customer_selection(message: Message, state: FSMContext):
         percent = (int(correct_answer)/20)*100
         datas = [
             "📋 <b>Imtihon natijalari</b>\n",
-            f"👤 <b>Talaba ismi:</b> {user.full_name}",
-            f"📞 <b>Telefon raqami:</b> {user.phone , ""}",
-            f"🎯 <b>Imtihon darajasi:</b> {result.level.name}",
-            f"📊 <b>Natija foizi:</b> {percent}%",
-            f"✅ <b>To‘g‘ri javoblar:</b> {correct_answer} ta",
-            f"❌ <b>Noto‘g‘ri javoblar:</b> {incorrect_answer} ta",
-            f"🕒 <b>Test vaqti:</b> {result.created_at.strftime('%d.%m.%Y %H:%M')}"
+            f"👤 <b>Talaba ismi:</b> {user.full_name or ""}",
+            f"📞 <b>Telefon raqami:</b> {user.phone or ""}",
+            f"🎯 <b>Imtihon darajasi:</b> {result.level.name or ""}",
+            f"📊 <b>Natija foizi:</b> {percent or ""}%",
+            f"✅ <b>To‘g‘ri javoblar:</b> {correct_answer or ""} ta",
+            f"❌ <b>Noto‘g‘ri javoblar:</b> {incorrect_answer or ""} ta",
+            f"🕒 <b>Test vaqti:</b> {result.created_at.strftime('%d.%m.%Y %H:%M') or ""}"
         ]
 
         caption_text = "\n".join(datas)
