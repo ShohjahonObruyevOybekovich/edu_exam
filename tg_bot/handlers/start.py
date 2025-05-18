@@ -200,7 +200,7 @@ async def handle_customer_selection(message: Message, state: FSMContext):
         ]
 
         caption_text = "\n".join(datas)
-        await message.answer(text=caption_text, reply_markup=admin(), parse_mode="Markdown")
+        await message.answer(text=caption_text, reply_markup=admin())
         await state.clear()
 
 
