@@ -3,7 +3,7 @@ import io
 import pandas as pd
 from aiogram import Bot, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InputFile
+from aiogram.types import InputFile, BufferedInputFile
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, \
     InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from icecream import ic
@@ -201,66 +201,64 @@ async def handle_customer_selection(message: Message, state: FSMContext):
         await state.clear()
 
 
-@dp.message(lambda msg: msg.text == "📊 Hisobotlar")
-async def handle_users(message: Message, state: FSMContext) -> None:
-    await state.set_state(User.user)
 
-    users = CustomUser.objects.all()
-
-    # Ma'lumotlarni to'plash
-    data = []
-    for user in users:
-        result = Result.objects.filter(user=user).first()
-        data.append({
-            "I.F.O": user.full_name,
-            "Telefon raqami": user.phone or "",
-            "Imtihon darajasi": result.level.name if result else "",
-            "To'g'ri javoblar soni": result.correct_answer if result else "",
-            "Ball": result.ball if result else "",
-            "Imtihon sanasi": result.created_at.strftime("%d/%m/%Y") if result and result.created_at else ""
-        })
-
-    df = pd.DataFrame(data)
-
-    output = io.BytesIO()
-
-    # Excel faylni yaratish
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, startrow=2, sheet_name='Talabalar')
-
-        workbook = writer.book
-        worksheet = writer.sheets['Talabalar']
-
-        # 1-qator uchun birlashtirish va matn qo'yish
-        worksheet.merge_range('A1:F1', 'Talabalar ro\'yxati', workbook.add_format({
-            'bold': True,
-            'align': 'center',
-            'valign': 'vcenter',
-            'font_size': 14
-        }))
-
-        # Sarlavhalar uchun format
-        header_format = workbook.add_format({
-            'bold': True,
-            'bg_color': '#D7E4BC',
-            'border': 1,
-            'align': 'center'
-        })
-
-        for col_num, value in enumerate(df.columns.values):
-            worksheet.write(2, col_num, value, header_format)
-
-
-        worksheet.set_column('A:A', 25)
-        worksheet.set_column('B:B', 18)
-        worksheet.set_column('C:C', 20)
-        worksheet.set_column('D:D', 20)
-        worksheet.set_column('E:E', 10)
-        worksheet.set_column('F:F', 15)
-
-        writer.save()
-
-    output.seek(0)
-
-    excel_file = InputFile(output, filename="Talabalar_hisoboti.xlsx")
-    await message.answer_document(document=excel_file, caption="📊 Talabalar ro'yxati hisobot fayli")
+# @dp.message(lambda msg : msg.text == "📊 Hisobotlar")
+# async def handle_users(message: Message, state: FSMContext) -> None:
+#     await state.set_state(User.user)
+#
+#     users = CustomUser.objects.all()
+#
+#     if not users:
+#         await message.answer("📭 Hozircha foydalanuvchilar ro'yxati bo'sh.")
+#         return
+#
+#     # Ma'lumotlarni to'plash
+#     data = []
+#     for user in users:
+#         result = Result.objects.filter(user=user).first()
+#         data.append({
+#             "I.F.O": user.full_name,
+#             "Telefon raqami": user.phone or "",
+#             "Imtihon darajasi": result.level.name if result else "",
+#             "To'g'ri javoblar soni": result.correct_answer if result else "",
+#             "Ball": result.ball if result else "",
+#             "Imtihon sanasi": result.created_at.strftime("%d/%m/%Y") if result and result.created_at else ""
+#         })
+#
+#     df = pd.DataFrame(data)
+#
+#     output = io.BytesIO()
+#
+#     # Excel faylni yaratish
+#     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+#         df.to_excel(writer, index=False, startrow=2, sheet_name='Talabalar')
+#
+#         workbook = writer.book
+#         worksheet = writer.sheets['Talabalar']
+#
+#         # Sarlavha qo'shish (masalan 1-qator uchun)
+#         header_format = workbook.add_format({
+#             'bold': True,
+#             'align': 'center',
+#             'valign': 'vcenter',
+#             'fg_color': '#D7E4BC',
+#             'border': 1
+#         })
+#
+#         worksheet.merge_range('A1:F1', 'Talabalar hisobotlari', header_format)
+#
+#         for col_num, value in enumerate(df.columns.values):
+#             worksheet.write(2, col_num, value, header_format)
+#
+#     output.seek(0)
+#     file = BufferedInputFile(output, filename="talabalar_hisobot.xlsx")
+#
+#     try:
+#         await bot.send_document(
+#             chat_id=message.from_user.id,
+#             document=file,
+#             caption="📊 Talabalar hisoboti"
+#         )
+#     except Exception as e:
+#         error_text = f"Faylni yuborishda xatolik yuz berdi:\n{e}"
+#         await message.answer(error_text, parse_mode=None)

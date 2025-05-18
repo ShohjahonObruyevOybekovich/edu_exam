@@ -14,9 +14,9 @@ def results():
 
 def admin():
     k1 = KeyboardButton(text="👥 Foydalanuvchilar ro‘yxati")
-    k2 = KeyboardButton(text="📊 Hisobotlar")
+    # k2 = KeyboardButton(text="📊 Hisobotlar")
 
     return ReplyKeyboardMarkup(
-        keyboard=[[k1], [k2]],
+        keyboard=[[k1]],
         resize_keyboard=True
     )
