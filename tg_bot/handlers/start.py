@@ -191,7 +191,7 @@ async def handle_customer_selection(message: Message, state: FSMContext):
         datas = [
             "📋 <b>Imtihon natijalari</b>\n",
             f"👤 <b>Talaba ismi:</b> {user.full_name}",
-            f"📞 <b>Telefon raqami:</b> {user.phone}",
+            f"📞 <b>Telefon raqami:</b> {user.phone , ""}",
             f"🎯 <b>Imtihon darajasi:</b> {result.level.name}",
             f"📊 <b>Natija foizi:</b> {percent}%",
             f"✅ <b>To‘g‘ri javoblar:</b> {correct_answer} ta",
