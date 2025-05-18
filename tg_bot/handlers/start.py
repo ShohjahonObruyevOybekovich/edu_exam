@@ -38,7 +38,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
         # Optional: send admin-specific buttons or info
         pass
     if user:
-        await message.answer(natija_txt,reply_markup=degree())
+        await message.answer(natija_txt,reply_markup=results())
 
 
 @dp.message(User.full_name)
