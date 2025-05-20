@@ -40,6 +40,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("auth/",include("account.urls")),
     path("exam/",include("exam.urls")),
+    path("result/",include("result.urls")),
 
     path("docs<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui", ),

@@ -15,12 +15,13 @@ from rest_framework_simplejwt.tokens import UntypedToken
 
 from account.models import CustomUser
 from account.utils import BotUserJWTAuthentication
-from bot.tasks import bot
+from bot.tasks import TelegramBot
 from exam.models import Level, Question, Answer
 from exam.serializers import LevelSerializer, QuestionSerializer, AnswerSerializer, UserAnswerSerializer
 from result.models import Result
+from tg_bot.buttons.reply import results
 
-
+bot = TelegramBot()
 # Create your views here.
 
 class LevelListCreate(ListCreateAPIView):
@@ -75,8 +76,7 @@ def extract_token_data(request):
             print("❌ Invalid token:", e)
     return None
 class QuestionsCheck(APIView):
-    authentication_classes = [BotUserJWTAuthentication]
-
+    permission_classes = [IsAuthenticated]
     @swagger_auto_schema(
         request_body=UserAnswerSerializer(many=True),
         operation_description="Check answers and calculate score.",
@@ -97,6 +97,8 @@ class QuestionsCheck(APIView):
     def post(self, request, *args, **kwargs):
 
         answers = request.data
+        ic(request.data)
+        ic(request.user)
 
         print("✅ Authenticated as:", request.user.full_name)
 
@@ -122,30 +124,33 @@ class QuestionsCheck(APIView):
                     incorrect += 1
             except Answer.DoesNotExist:
                 incorrect += 1
-
+        question_id = answers[0].get("question_id")
         ball = round((correct / total) * 100) if total > 0 else 0
+        result = Result.objects.create(
+            level=Question.objects.get(id=question_id).level,
+            user=request.user,
+            correct_answer=correct,
+            ball=ball,
+        )
+        if result:
+            user = request.user
+            user.has_passed = True
+            user.save()
 
         # Notify admins
         for admin in CustomUser.objects.filter(role="Admin", chat_id__isnull=False):
             try:
+                ic(admin.chat_id)
                 text = (
-                    f"🧑‍🎓 Talaba: <b>{request.user.full_name}<b/>"
+                    f"🧑‍🎓 Talaba: <b>{admin.full_name}</b>\n"
                     f"✅ To'g'ri javoblar: {correct}\n"
                     f"❌ Noto'g'ri javoblar: {incorrect}\n"
                     f"🧮 Jami: {total}\n"
                     f"📊 Ball: {ball}/100"
                 )
                 bot.send_message(chat_id=admin.chat_id, text=text)
-            except Exception:
-                continue
-
-        # Save result
-        first_question_id = answers[0].get("question_id")
-        try:
-            question = Question.objects.get(id=first_question_id)
-        except Question.DoesNotExist:
-            return Response({"error": "Invalid question_id"}, status=404)
-
+            except Exception as e:
+                return bot.send_message(chat_id=admin.chat_id,text=e)
         return Response({
             "correct": correct,
             "incorrect": incorrect,

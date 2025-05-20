@@ -30,6 +30,8 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(choices=ROLE_CHOICES, max_length=30, default="User")
 
+    has_passed = models.BooleanField(default=False, help_text="Is this user has passed the test?")
+
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
