@@ -126,8 +126,8 @@ class Me(APIView):
 
         user_data = {
             "id": user.id,
-            "name": user.name,
-            "number": user.number,
+            "name": user.full_name,
+            "number": user.phone,
             "chat_id": user.chat_id,
             "has_passed": user.has_passed,
         }
