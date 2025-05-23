@@ -12,7 +12,7 @@ class Level(BaseModel):
 
 
 class Question(BaseModel):
-    name = models.CharField(max_length=100)
+    name = models.TextField()
     level : "Level" = models.ForeignKey("exam.Level", on_delete=models.CASCADE, related_name="questions_level")
     def __str__(self):
         return self.name
