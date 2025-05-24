@@ -11,7 +11,7 @@ class ResultListApiView(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if user:
-            return Result.objects.filter(user=user).first()
+        if user.is_authenticated:  # Better to check is_authenticated
+            return Result.objects.filter(user=user)  # Remove .first()
         else:
             return Result.objects.none()
