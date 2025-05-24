@@ -141,8 +141,12 @@ class QuestionsCheck(APIView):
         for admin in CustomUser.objects.filter(role="Admin", chat_id__isnull=False):
             try:
                 ic(admin.chat_id)
+
+                user = CustomUser.objects.filter(id=request.user.id).first()
+
                 text = (
-                    f"🧑‍🎓 Talaba: <b>{admin.full_name}</b>\n"
+                    f"🧑‍🎓 Talaba: <b>{user.full_name}</b>\n"
+                    f"📞 Telefon raqami: <b>{user.phone}</b>\n"
                     f"✅ To'g'ri javoblar: {correct}\n"
                     f"❌ Noto'g'ri javoblar: {incorrect}\n"
                     f"🧮 Jami: {total}\n"
