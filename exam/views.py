@@ -75,6 +75,7 @@ def extract_token_data(request):
         except InvalidToken as e:
             print("❌ Invalid token:", e)
     return None
+
 class QuestionsCheck(APIView):
     permission_classes = [IsAuthenticated]
     @swagger_auto_schema(

@@ -10,8 +10,7 @@ class ResultListApiView(ListAPIView):
     serializer_class = ResultsSerializer
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated:  # Better to check is_authenticated
-            return Result.objects.filter(user=user)  # Remove .first()
-        else:
-            return Result.objects.none()
+        user = self.request.query_params.get('user', None)
+        if user:
+            return Result.objects.filter(user__id=user)
+        return Result.objects.none()
