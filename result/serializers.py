@@ -20,3 +20,4 @@ class ResultsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["level"] = LevelSerializer(instance.level).data
+        return rep

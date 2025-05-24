@@ -12,5 +12,5 @@ class ResultListApiView(ListAPIView):
     def get_queryset(self):
         user = self.request.query_params.get('user', None)
         if user:
-            return Result.objects.filter(user__id=user)
+            return Result.objects.filter(user__id=user).all()
         return Result.objects.none()
